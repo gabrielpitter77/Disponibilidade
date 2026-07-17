@@ -234,7 +234,7 @@
      MES, DATA, TOTAL FROTA, PARADOS, ATIVOS,
      DISPONIBILIDADE (%), STATUS, META (%)
      ========================================================= */
-  const CSV_URL = "COLE_AQUI_O_LINK_DO_CSV_PUBLICADO";
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/1Bk1LEYRj--LbEZx7gs8CMOlrR4kUcpVp/gviz/tq?tqx=out:csv&gid=1957024028";
 
   const REFRESH_MS = 5 * 60 * 1000;
   let rawRows = [];
@@ -285,10 +285,17 @@
     const dispCol = findColumn(["disponibilidade","disponib"]);
     const metaCol = findColumn(["meta"]);
 
+    function parsePct(v){
+      let s = String(v).trim().replace("%", "").replace(",", ".");
+      let n = parseFloat(s);
+      if(isNaN(n)) return NaN;
+      return n <= 1 ? n * 100 : n;
+    }
+
     let rows = rawRows.map(r => {
       const obj = {};
       headers.forEach((h,i) => obj[h] = r[i] ?? "");
-      const pct = parseFloat(String(obj[dispCol]).replace(",", "."));
+      const pct = parsePct(obj[dispCol]);
       obj.__pct = pct;
       obj.__status = statusFromPct(pct);
       obj.__mes = mesCol ? obj[mesCol] : "";
@@ -296,9 +303,9 @@
       obj.__total = totalCol ? obj[totalCol] : "";
       obj.__parados = paradosCol ? obj[paradosCol] : "";
       obj.__ativos = ativosCol ? obj[ativosCol] : "";
-      obj.__meta = metaCol ? parseFloat(String(obj[metaCol]).replace(",",".")) : null;
+      obj.__meta = metaCol ? parsePct(obj[metaCol]) : null;
       return obj;
-    }).filter(r => !isNaN(r.__pct));
+    }).filter(r => !isNaN(r.__pct) && r.__total);
 
     return rows;
   }
@@ -448,8 +455,13 @@
       if(!res.ok) throw new Error("Falha ao buscar CSV");
       const text = await res.text();
       const parsed = parseCSV(text);
-      headers = parsed[0].map(h => h.trim());
-      rawRows = parsed.slice(1);
+      const headerRowIndex = parsed.findIndex(row =>
+        row.some(cell => String(cell).trim().toUpperCase() === "DATA") &&
+        row.some(cell => /DISPONIB/i.test(String(cell)))
+      );
+      const startIndex = headerRowIndex >= 0 ? headerRowIndex : 0;
+      headers = parsed[startIndex].map(h => h.trim());
+      rawRows = parsed.slice(startIndex + 1);
       render();
       document.getElementById("last-update").textContent = "Atualizado às " + new Date().toLocaleTimeString('pt-BR');
       setStatusDot(true);
