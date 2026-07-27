@@ -39,7 +39,7 @@
 
   main{max-width:1600px; margin:0 auto; padding:28px;}
 
-  .kpi-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; margin-bottom:22px;}
+  .kpi-grid{display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; margin-bottom:22px;}
   .kpi{padding:18px 20px;}
   .kpi .eyebrow{margin-bottom:10px;}
   .kpi .value{font-family:'IBM Plex Mono'; font-size:26px; font-weight:600; line-height:1;}
@@ -86,9 +86,10 @@
 
   <section class="panel chart-panel">
     <div class="section-head">
-      <h2 id="chartTitle">Disponibilidade — Julho</h2>
+      <h2 id="chartTitle">Disponibilidade</h2>
       <div class="legend">
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Nº Atendimento</div>
+        <span class="eyebrow" id="statusMsg" style="margin-right:6px;">CARREGANDO…</span>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Veículos Parados</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. (%)</div>
         <div class="legend-item"><span class="legend-swatch" style="border-top:2px dashed var(--normal); height:0;"></span>Meta de excelência (97%)</div>
       </div>
@@ -97,63 +98,121 @@
   </section>
 </main>
 
-<footer>DISPONIBILIDADE — LOC FROTA · DADOS DE JULHO/2026 (PLANILHA AINDA NÃO CONECTADA AO GOOGLE SHEETS)</footer>
+<footer>DISPONIBILIDADE — LOC FROTA · INTEGRADO AO GOOGLE SHEETS</footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 /* ============================================================
-   DADOS — por enquanto fixos (copiados da planilha Excel de julho).
-   Quando a base subir pro Google Sheets, troque este bloco por um
-   fetch() no endpoint gviz CSV, igual nos outros painéis.
+   INTEGRAÇÃO GOOGLE SHEETS
+   Lê a tabela diária (DATA, TOTAL FROTA, PARADOS, ATIVOS,
+   DISPONIB.(%), STATUS, META) direto da planilha via CSV público.
    ============================================================ */
-const DADOS = [
-  { data:'01/07', dia:'Quarta',  disponib:96.0, meta:97.0, atendimento:41 },
-  { data:'02/07', dia:'Quinta',  disponib:95.7, meta:97.0, atendimento:51 },
-  { data:'03/07', dia:'Sexta',   disponib:95.2, meta:97.0, atendimento:41 },
-  { data:'04/07', dia:'Sábado',  disponib:95.4, meta:97.0, atendimento:4  },
-  { data:'05/07', dia:'Domingo', disponib:95.4, meta:97.0, atendimento:null },
-  { data:'06/07', dia:'Segunda', disponib:96.0, meta:97.0, atendimento:28 },
-  { data:'07/07', dia:'Terça',   disponib:95.7, meta:97.0, atendimento:57 },
-  { data:'08/07', dia:'Quarta',  disponib:96.1, meta:97.0, atendimento:47 },
-  { data:'09/07', dia:'Quinta',  disponib:95.5, meta:97.0, atendimento:43 },
-  { data:'10/07', dia:'Sexta',   disponib:95.5, meta:97.0, atendimento:42 },
-  { data:'11/07', dia:'Sábado',  disponib:95.5, meta:97.0, atendimento:3  },
-  { data:'12/07', dia:'Domingo', disponib:95.5, meta:97.0, atendimento:null },
-  { data:'13/07', dia:'Segunda', disponib:95.5, meta:97.0, atendimento:39 },
-  { data:'14/07', dia:'Terça',   disponib:95.2, meta:97.0, atendimento:46 },
-  { data:'15/07', dia:'Quarta',  disponib:95.1, meta:97.0, atendimento:36 },
-  { data:'16/07', dia:'Quinta',  disponib:95.7, meta:97.0, atendimento:32 },
-  { data:'17/07', dia:'Sexta',   disponib:95.9, meta:97.0, atendimento:38 },
-  { data:'18/07', dia:'Sábado',  disponib:95.5, meta:97.0, atendimento:7  },
-  { data:'19/07', dia:'Domingo', disponib:95.5, meta:97.0, atendimento:null },
-  { data:'20/07', dia:'Segunda', disponib:95.4, meta:97.0, atendimento:48 },
-  { data:'21/07', dia:'Terça',   disponib:95.2, meta:97.0, atendimento:47 },
-  { data:'22/07', dia:'Quarta',  disponib:95.1, meta:97.0, atendimento:49 },
-  { data:'23/07', dia:'Quinta',  disponib:95.8, meta:97.0, atendimento:35 },
-  { data:'24/07', dia:'Sexta',   disponib:95.7, meta:97.0, atendimento:36 },
-  { data:'25/07', dia:'Sábado',  disponib:95.7, meta:97.0, atendimento:7  },
-  { data:'26/07', dia:'Domingo', disponib:95.7, meta:97.0, atendimento:null },
-  { data:'27/07', dia:'Segunda', disponib:null, meta:97.0, atendimento:null },
-  { data:'28/07', dia:'Terça',   disponib:null, meta:97.0, atendimento:null },
-  { data:'29/07', dia:'Quarta',  disponib:null, meta:97.0, atendimento:null },
-  { data:'30/07', dia:'Quinta',  disponib:null, meta:97.0, atendimento:null },
-  { data:'31/07', dia:'Sexta',   disponib:null, meta:97.0, atendimento:null },
-];
+const SPREADSHEET_ID = '1Bk1LEYRj--LbEZx7gs8CMOlrR4kUcpVp';
+const GID = '1957024028';
+
+function csvUrl(gid){
+  return 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + gid;
+}
+
+const DIAS_SEMANA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+function numeroBR(txt){
+  if(!txt) return NaN;
+  return parseFloat(txt.toString().trim().replace(/\./g,'').replace(',', '.').replace('%',''));
+}
+
+let DADOS = [];
+let barSelecionado = null;
+let barRects = [];
+let RESUMO = { media: null, melhorDia: null, piorDia: null, diasAcimaMeta: null };
+let erroCarregamento = false;
+let erroMensagem = '';
+
+async function carregarDados(){
+  try{
+    const resp = await fetch(csvUrl(GID));
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const parsed = Papa.parse(text, { skipEmptyLines: false });
+    const rows = parsed.data;
+
+    // localiza o cabeçalho pela dupla "TOTAL FROTA" + "PARADOS", já que a
+    // coluna A às vezes vem com texto extra grudado (igual em outras abas)
+    var headerIdx = -1;
+    for(var h=0; h<rows.length; h++){
+      const c1 = (rows[h][1] || '').trim().toUpperCase();
+      const c2 = (rows[h][2] || '').trim().toUpperCase();
+      if(c1 === 'TOTAL FROTA' && c2 === 'PARADOS'){ headerIdx = h; break; }
+    }
+    if(headerIdx === -1) throw new Error('cabeçalho da tabela diária não encontrado (colunas "TOTAL FROTA"/"PARADOS")');
+
+    // busca os KPIs de resumo pelo texto do rótulo, em qualquer célula da planilha
+    function valorPorRotulo(rotulo){
+      for(var r=0; r<rows.length; r++){
+        for(var c=0; c<rows[r].length; c++){
+          if((rows[r][c] || '').trim().toUpperCase().indexOf(rotulo.toUpperCase()) === 0){
+            return (rows[r][c+1] || '').trim();
+          }
+        }
+      }
+      return '';
+    }
+    RESUMO.media = numeroBR(valorPorRotulo('MÉDIA DO PERÍODO'));
+    RESUMO.melhorDia = numeroBR(valorPorRotulo('MELHOR DIA'));
+    RESUMO.piorDia = numeroBR(valorPorRotulo('PIOR DIA'));
+    RESUMO.diasAcimaMeta = parseInt(valorPorRotulo('DIAS ACIMA DA META'), 10);
+
+    const out = [];
+    for(var i = headerIdx + 1; i < rows.length; i++){
+      const r = rows[i];
+      const dataTxt = (r[0] || '').trim();
+      const disponibTxt = (r[4] || '').trim();
+      if(!dataTxt || !disponibTxt) continue; // pula dias futuros/sem dado ainda
+
+      const partes = dataTxt.split('/'); // formato M/D/AAAA
+      if(partes.length !== 3) continue;
+      const dt = new Date(parseInt(partes[2],10), parseInt(partes[0],10)-1, parseInt(partes[1],10));
+      const dataFmt = String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0');
+
+      out.push({
+        data: dataFmt,
+        dia: DIAS_SEMANA[dt.getDay()],
+        disponib: numeroBR(disponibTxt),
+        meta: numeroBR(r[6]) || 97,
+        atendimento: parseInt((r[2] || '').trim(), 10) || 0 // "Parados" — nome do campo mantido por compatibilidade
+      });
+    }
+    DADOS = out;
+  }catch(err){
+    console.error('Falha ao carregar dados:', err);
+    erroCarregamento = true;
+    erroMensagem = (err && err.message) ? err.message : String(err);
+  }
+}
+</script>
+<script>
 
 /* ---------- KPIs ---------- */
 function renderKPIs(){
+  if(DADOS.length === 0){
+    document.getElementById('kpiGrid').innerHTML = '<div class="panel kpi"><div class="eyebrow">Sem dados</div><div class="value mono">-</div></div>';
+    return;
+  }
   const comValor = DADOS.filter(d => d.disponib !== null);
-  const media = comValor.reduce((s,d)=>s+d.disponib,0) / comValor.length;
-  const metaExcelencia = DADOS[0].meta; // 97% — meta de excelência
+  const mediaComputada = comValor.reduce((s,d)=>s+d.disponib,0) / comValor.length;
+  const media = Number.isFinite(RESUMO.media) ? RESUMO.media : mediaComputada;
+  const metaExcelencia = DADOS[0].meta || 97; // 97% — meta de excelência
   const limiteAceitavel = 95; // a partir de 95% já é considerado bom
   const diasAbaixoDoAceitavel = comValor.filter(d => d.disponib < limiteAceitavel).length;
-  const totalAtendimentos = DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
+  const totalParados = DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
 
   const kpiData = [
     { label: 'Disponibilidade média', value: media.toFixed(1) + '%', accent: media >= limiteAceitavel ? 'normal' : 'critico' },
     { label: 'Meta', value: limiteAceitavel.toFixed(1) + '%', accent: 'blue' },
     { label: 'Meta de excelência', value: metaExcelencia.toFixed(1) + '%', accent: 'normal' },
+    { label: 'Dias no período', value: comValor.length, accent: 'blue' },
     { label: 'Dias abaixo de 95%', value: diasAbaixoDoAceitavel + ' de ' + comValor.length, accent: diasAbaixoDoAceitavel > 0 ? 'critico' : 'normal' },
-    { label: 'Total de atendimentos', value: totalAtendimentos, accent: 'blue' }
+    { label: 'Total de veículos parados', value: totalParados, accent: 'blue' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpiData.map(function(k){
     return '<div class="panel kpi accent-' + k.accent + '">' +
@@ -222,7 +281,7 @@ function desenharGrafico(){
       ctx.font = '600 10px IBM Plex Mono';
       ctx.textAlign = 'center';
       const cx = x + slot/2;
-      const cy = (yMetaExcelencia + barZoneTop)/2;
+      const cy = barZoneTop + (barZoneBottom - barZoneTop) * 0.35;
       ctx.fillText('Sem', cx, cy - 6);
       ctx.fillText('operação', cx, cy + 8);
     }
@@ -238,17 +297,31 @@ function desenharGrafico(){
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // barras (Nº Atendimento)
+  // barras (Veículos Parados) — com interação de clique (foco/destaque)
+  barRects = [];
   DADOS.forEach(function(d, i){
     if(d.atendimento === null || d.atendimento === undefined) return;
     const x = padL + slot*i;
-    const barW = slot * 0.55;
-    const barH = barZoneH * (d.atendimento / maxAtend);
+    const selecionada = barSelecionado === i;
+    const barW = slot * (selecionada ? 0.68 : 0.55);
+    const barH = barZoneH * (d.atendimento / maxAtend) * (selecionada ? 1.05 : 1);
     const y = barZoneBottom - barH;
-    ctx.fillStyle = '#2E8FA8';
-    ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
+    barRects.push({ x: x, y: barZoneTop, width: slot, height: barZoneBottom - barZoneTop, index: i });
+
+    if(selecionada){
+      ctx.save();
+      ctx.shadowColor = 'rgba(46,143,168,0.9)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#3FB0CC';
+      ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#2E8FA8';
+      ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
+    }
+
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 11px IBM Plex Mono';
+    ctx.font = (selecionada ? '700 12px' : '600 11px') + ' IBM Plex Mono';
     ctx.textAlign = 'center';
     ctx.fillText(d.atendimento, x + slot/2, y - 6);
   });
@@ -270,12 +343,21 @@ function desenharGrafico(){
   function curvaSuave(pts){
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
-    for(let i=0; i<pts.length-1; i++){
-      const xc = (pts[i].x + pts[i+1].x) / 2;
-      const yc = (pts[i].y + pts[i+1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+    if(pts.length === 2){
+      ctx.lineTo(pts[1].x, pts[1].y);
+      return;
     }
-    ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+    for(let i=0; i<pts.length-1; i++){
+      const p0 = pts[i-1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i+1];
+      const p3 = pts[i+2] || p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
   }
 
   segmentos.forEach(function(seg){
@@ -337,6 +419,18 @@ function desenharGrafico(){
 }
 window.addEventListener('resize', desenharGrafico);
 
+const chartCanvasEl = document.getElementById('chart');
+chartCanvasEl.style.cursor = 'pointer';
+chartCanvasEl.addEventListener('click', function(e){
+  const rect = chartCanvasEl.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width && my >= b.y && my <= b.y + b.height; });
+  if(!hit) return;
+  barSelecionado = (barSelecionado === hit.index) ? null : hit.index;
+  desenharGrafico();
+});
+
 function tickClock(){
   const now = new Date();
   document.getElementById('clock').textContent = now.toLocaleString('pt-BR', {
@@ -346,8 +440,20 @@ function tickClock(){
 tickClock();
 setInterval(tickClock, 1000);
 
-renderKPIs();
-desenharGrafico();
+carregarDados().then(function(){
+  const statusEl = document.getElementById('statusMsg');
+  if(erroCarregamento){
+    statusEl.textContent = 'FALHA AO CARREGAR: ' + erroMensagem;
+    statusEl.style.color = '#FF8A8A';
+  } else if(DADOS.length === 0){
+    statusEl.textContent = 'NENHUM DIA COM DADOS ENCONTRADO';
+    statusEl.style.color = '#FFC466';
+  } else {
+    statusEl.textContent = DADOS[0].data + ' – ' + DADOS[DADOS.length-1].data;
+  }
+  renderKPIs();
+  desenharGrafico();
+});
 </script>
 </body>
 </html>
