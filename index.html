@@ -166,9 +166,9 @@ async function carregarDados(){
     for(var i = headerIdx + 1; i < rows.length; i++){
       const r = rows[i];
       const dataTxt = (r[0] || '').trim();
-      const disponibTxt = (r[4] || '').trim();
-      if(!dataTxt || !disponibTxt) continue; // pula dias futuros/sem dado ainda
+      if(!dataTxt) continue; // linha totalmente vazia = fim da tabela
 
+      const disponibTxt = (r[4] || '').trim();
       const partes = dataTxt.split('/'); // formato M/D/AAAA
       if(partes.length !== 3) continue;
       const dt = new Date(parseInt(partes[2],10), parseInt(partes[0],10)-1, parseInt(partes[1],10));
@@ -177,11 +177,24 @@ async function carregarDados(){
       out.push({
         data: dataFmt,
         dia: DIAS_SEMANA[dt.getDay()],
-        disponib: numeroBR(disponibTxt),
+        disponib: disponibTxt ? numeroBR(disponibTxt) : null, // sem valor ainda = dia em branco no gráfico
         meta: numeroBR(r[6]) || 97,
-        atendimento: parseInt((r[2] || '').trim(), 10) || 0 // "Parados" — nome do campo mantido por compatibilidade
+        atendimento: disponibTxt ? (parseInt((r[2] || '').trim(), 10) || 0) : null // "Parados"
       });
     }
+
+    // coluna "Méd" no final, com a média do período (vem do bloco de parâmetros)
+    if(out.length){
+      out.push({
+        data: 'Méd',
+        dia: '',
+        disponib: Number.isFinite(RESUMO.media) ? RESUMO.media : null,
+        meta: out[0].meta,
+        atendimento: null,
+        ehMedia: true
+      });
+    }
+
     DADOS = out;
   }catch(err){
     console.error('Falha ao carregar dados:', err);
@@ -352,7 +365,25 @@ function desenharGrafico(){
   }
 
   segmentos.forEach(function(seg){
-    if(seg.length < 2) return;
+    if(seg.length < 2){
+      // ponto isolado (ex: coluna "Méd" sem vizinhos) — desenha só o marcador
+      if(seg.length === 1){
+        const p = seg[0];
+        ctx.save();
+        ctx.shadowColor = 'rgba(255,255,255,0.7)';
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.8, 0, Math.PI*2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = '#E7EAF0';
+        ctx.font = '600 11px IBM Plex Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 12);
+      }
+      return;
+    }
 
     // área de gradiente sob a curva
     ctx.save();
