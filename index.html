@@ -122,7 +122,7 @@ function numeroBR(txt){
 }
 
 let DADOS = [];
-let barSelecionado = null;
+let barSelecionado = new Set();
 let barRects = [];
 let RESUMO = { media: null, melhorDia: null, piorDia: null, diasAcimaMeta: null };
 let erroCarregamento = false;
@@ -225,7 +225,11 @@ function renderKPIs(){
   const metaExcelencia = DADOS[0].meta || 97; // 97% — meta de excelência
   const limiteAceitavel = 95; // a partir de 95% já é considerado bom
   const diasAbaixoDoAceitavel = comValor.filter(d => d.disponib < limiteAceitavel).length;
-  const totalParados = DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
+  const temSelecao = barSelecionado.size > 0;
+  const totalAtendimentos = temSelecao
+    ? DADOS.reduce((s,d,i)=> s + (barSelecionado.has(i) ? (d.atendimento||0) : 0), 0)
+    : DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
+  const labelTotal = temSelecao ? ('Total selecionado (' + barSelecionado.size + ' dia' + (barSelecionado.size>1?'s':'') + ')') : 'Total de atendimentos';
 
   const kpiData = [
     { label: 'Disponibilidade média', value: media.toFixed(1) + '%', accent: media >= limiteAceitavel ? 'normal' : 'critico' },
@@ -233,7 +237,7 @@ function renderKPIs(){
     { label: 'Meta de excelência', value: metaExcelencia.toFixed(1) + '%', accent: 'normal' },
     { label: 'Dias no período', value: comValor.length, accent: 'blue' },
     { label: 'Dias abaixo de 95%', value: diasAbaixoDoAceitavel + ' de ' + comValor.length, accent: diasAbaixoDoAceitavel > 0 ? 'critico' : 'normal' },
-    { label: 'Total de atendimentos', value: totalParados, accent: 'blue' }
+    { label: labelTotal, value: totalAtendimentos, accent: temSelecao ? 'atencao' : 'blue' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpiData.map(function(k){
     return '<div class="panel kpi accent-' + k.accent + '">' +
@@ -301,7 +305,7 @@ function desenharGrafico(){
 
   // faixas de "Sem operação" — dias sem Nº Atendimento (domingo, na maioria)
   DADOS.forEach(function(d, i){
-    if(d.disponib === null || d.atendimento !== null) return;
+    if(d.data === 'Méd' || d.disponib === null || d.atendimento !== null) return;
     const x = padL + slot*i;
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(x, yMetaExcelencia, slot, barZoneBottom - yMetaExcelencia);
@@ -329,7 +333,7 @@ function desenharGrafico(){
   DADOS.forEach(function(d, i){
     if(d.atendimento === null || d.atendimento === undefined) return;
     const x = padL + slot*i;
-    const selecionada = barSelecionado === i;
+    const selecionada = barSelecionado.has(i);
     const barW = slot * (selecionada ? 0.68 : 0.55);
     const barH = barZoneH * (d.atendimento / maxAtend) * (selecionada ? 1.05 : 1);
     const y = barZoneBottom - barH;
@@ -472,7 +476,9 @@ chartCanvasEl.addEventListener('click', function(e){
   const my = e.clientY - rect.top;
   const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width && my >= b.y && my <= b.y + b.height; });
   if(!hit) return;
-  barSelecionado = (barSelecionado === hit.index) ? null : hit.index;
+  if(barSelecionado.has(hit.index)) barSelecionado.delete(hit.index);
+  else barSelecionado.add(hit.index);
+  renderKPIs();
   desenharGrafico();
 });
 
