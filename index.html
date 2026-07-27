@@ -89,7 +89,7 @@
       <h2 id="chartTitle">Disponibilidade</h2>
       <div class="legend">
         <span class="eyebrow" id="statusMsg" style="margin-right:6px;">CARREGANDO…</span>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Veículos Parados</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Nº Atendimento</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. (%)</div>
         <div class="legend-item"><span class="legend-swatch" style="border-top:2px dashed var(--normal); height:0;"></span>Meta de excelência (97%)</div>
       </div>
@@ -136,16 +136,6 @@ async function carregarDados(){
     const parsed = Papa.parse(text, { skipEmptyLines: false });
     const rows = parsed.data;
 
-    // o cabeçalho da tabela diária vem quase todo em branco no export CSV
-    // (só a coluna STATUS tem texto de verdade) — então localizamos a linha
-    // por ela, e lemos o resto por posição fixa: 0 Data, 1 Total Frota,
-    // 2 Parados, 3 Ativos, 4 Disponib.(%), 5 Status, 6 Meta
-    var headerIdx = -1;
-    for(var h=0; h<rows.length; h++){
-      if((rows[h][5] || '').trim().toUpperCase() === 'STATUS'){ headerIdx = h; break; }
-    }
-    if(headerIdx === -1) throw new Error('cabeçalho da tabela diária não encontrado (coluna "STATUS")');
-
     // busca os KPIs de resumo pelo texto do rótulo, em qualquer célula da planilha
     function valorPorRotulo(rotulo){
       for(var r=0; r<rows.length; r++){
@@ -162,39 +152,57 @@ async function carregarDados(){
     RESUMO.piorDia = numeroBR(valorPorRotulo('PIOR DIA'));
     RESUMO.diasAcimaMeta = parseInt(valorPorRotulo('DIAS ACIMA DA META'), 10);
 
+    // essa planilha tem duas tabelas diárias diferentes; a que queremos é a
+    // segunda (DATA / DISPONIB.(%) / META / Nº Atendimento). Como o texto do
+    // cabeçalho vem quebrado no CSV, localizamos pelo FORMATO dos dados: uma
+    // linha cuja coluna A começa com "dd/m" e as colunas B e C têm "%"
+    var startIdx = -1;
+    for(var h=0; h<rows.length; h++){
+      const c0 = (rows[h][0] || '').trim();
+      const c1 = (rows[h][1] || '').trim();
+      const c2 = (rows[h][2] || '').trim();
+      if(/^\d{1,2}\/\d{1,2}/.test(c0) && c1.indexOf('%') !== -1 && c2.indexOf('%') !== -1){
+        startIdx = h; break;
+      }
+    }
+    if(startIdx === -1) throw new Error('tabela DATA/DISPONIB./META/Nº Atendimento não encontrada');
+
+    const ANO_REFERENCIA = 2026;
     const out = [];
-    for(var i = headerIdx + 1; i < rows.length; i++){
+    for(var i = startIdx; i < rows.length; i++){
       const r = rows[i];
       const dataTxt = (r[0] || '').trim();
-      if(!dataTxt) continue; // linha totalmente vazia = fim da tabela
+      if(!dataTxt) break; // linha em branco = fim da tabela
 
-      const disponibTxt = (r[4] || '').trim();
-      const partes = dataTxt.split('/'); // formato M/D/AAAA
-      if(partes.length !== 3) continue;
-      const dt = new Date(parseInt(partes[2],10), parseInt(partes[0],10)-1, parseInt(partes[1],10));
-      const dataFmt = String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0');
+      const disponibTxt = (r[1] || '').trim();
+      const atendTxt = (r[3] || '').trim();
+
+      if(/^méd/i.test(dataTxt)){
+        // linha de média, já vem pronta na planilha
+        out.push({
+          data: 'Méd',
+          dia: '',
+          disponib: disponibTxt ? numeroBR(disponibTxt) : null,
+          meta: numeroBR(r[2]) || 97,
+          atendimento: null
+        });
+        continue;
+      }
+
+      const m = dataTxt.match(/^(\d{1,2})\/(\d{1,2})/);
+      if(!m) continue;
+      const dia = parseInt(m[1], 10), mes = parseInt(m[2], 10);
+      const dt = new Date(ANO_REFERENCIA, mes - 1, dia);
+      const dataFmt = String(dia).padStart(2,'0') + '/' + String(mes).padStart(2,'0');
 
       out.push({
         data: dataFmt,
         dia: DIAS_SEMANA[dt.getDay()],
-        disponib: disponibTxt ? numeroBR(disponibTxt) : null, // sem valor ainda = dia em branco no gráfico
-        meta: numeroBR(r[6]) || 97,
-        atendimento: disponibTxt ? (parseInt((r[2] || '').trim(), 10) || 0) : null // "Parados"
+        disponib: disponibTxt ? numeroBR(disponibTxt) : null,
+        meta: numeroBR(r[2]) || 97,
+        atendimento: (!atendTxt || atendTxt === '-') ? null : (parseInt(atendTxt, 10) || 0)
       });
     }
-
-    // coluna "Méd" no final, com a média do período (vem do bloco de parâmetros)
-    if(out.length){
-      out.push({
-        data: 'Méd',
-        dia: '',
-        disponib: Number.isFinite(RESUMO.media) ? RESUMO.media : null,
-        meta: out[0].meta,
-        atendimento: null,
-        ehMedia: true
-      });
-    }
-
     DADOS = out;
   }catch(err){
     console.error('Falha ao carregar dados:', err);
@@ -225,7 +233,7 @@ function renderKPIs(){
     { label: 'Meta de excelência', value: metaExcelencia.toFixed(1) + '%', accent: 'normal' },
     { label: 'Dias no período', value: comValor.length, accent: 'blue' },
     { label: 'Dias abaixo de 95%', value: diasAbaixoDoAceitavel + ' de ' + comValor.length, accent: diasAbaixoDoAceitavel > 0 ? 'critico' : 'normal' },
-    { label: 'Total de veículos parados', value: totalParados, accent: 'blue' }
+    { label: 'Total de atendimentos', value: totalParados, accent: 'blue' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpiData.map(function(k){
     return '<div class="panel kpi accent-' + k.accent + '">' +
@@ -291,6 +299,21 @@ function desenharGrafico(){
   });
   ctx.setLineDash([]);
 
+  // faixas de "Sem operação" — dias sem Nº Atendimento (domingo, na maioria)
+  DADOS.forEach(function(d, i){
+    if(d.disponib === null || d.atendimento !== null) return;
+    const x = padL + slot*i;
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(x, yMetaExcelencia, slot, barZoneBottom - yMetaExcelencia);
+    ctx.fillStyle = 'rgba(139,145,163,0.7)';
+    ctx.font = '600 10px IBM Plex Mono';
+    ctx.textAlign = 'center';
+    const cx = x + slot/2;
+    const cy = barZoneTop + (barZoneBottom - barZoneTop) * 0.35;
+    ctx.fillText('Sem', cx, cy - 6);
+    ctx.fillText('operação', cx, cy + 8);
+  });
+
   // linha de meta de excelência (97%) tracejada — verde
   ctx.setLineDash([6,4]);
   ctx.strokeStyle = '#2ED3A6';
@@ -301,7 +324,7 @@ function desenharGrafico(){
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // barras (Veículos Parados) — com interação de clique (foco/destaque)
+  // barras (Nº Atendimento) — com interação de clique (foco/destaque)
   barRects = [];
   DADOS.forEach(function(d, i){
     if(d.atendimento === null || d.atendimento === undefined) return;
