@@ -136,15 +136,15 @@ async function carregarDados(){
     const parsed = Papa.parse(text, { skipEmptyLines: false });
     const rows = parsed.data;
 
-    // localiza o cabeçalho pela dupla "TOTAL FROTA" + "PARADOS", já que a
-    // coluna A às vezes vem com texto extra grudado (igual em outras abas)
+    // o cabeçalho da tabela diária vem quase todo em branco no export CSV
+    // (só a coluna STATUS tem texto de verdade) — então localizamos a linha
+    // por ela, e lemos o resto por posição fixa: 0 Data, 1 Total Frota,
+    // 2 Parados, 3 Ativos, 4 Disponib.(%), 5 Status, 6 Meta
     var headerIdx = -1;
     for(var h=0; h<rows.length; h++){
-      const c1 = (rows[h][1] || '').trim().toUpperCase();
-      const c2 = (rows[h][2] || '').trim().toUpperCase();
-      if(c1 === 'TOTAL FROTA' && c2 === 'PARADOS'){ headerIdx = h; break; }
+      if((rows[h][5] || '').trim().toUpperCase() === 'STATUS'){ headerIdx = h; break; }
     }
-    if(headerIdx === -1) throw new Error('cabeçalho da tabela diária não encontrado (colunas "TOTAL FROTA"/"PARADOS")');
+    if(headerIdx === -1) throw new Error('cabeçalho da tabela diária não encontrado (coluna "STATUS")');
 
     // busca os KPIs de resumo pelo texto do rótulo, em qualquer célula da planilha
     function valorPorRotulo(rotulo){
@@ -231,6 +231,16 @@ function desenharGrafico(){
   canvas.height = rect.height * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
+
+  if(DADOS.length === 0){
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.fillStyle = 'rgba(139,145,163,0.8)';
+    ctx.font = '13px IBM Plex Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sem dados carregados da planilha', rect.width/2, rect.height/2);
+    barRects = [];
+    return;
+  }
 
   const w = rect.width, h = rect.height;
   const padL = 20, padR = 20, padT = 40, padB = 40;
