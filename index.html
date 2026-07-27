@@ -278,25 +278,6 @@ function desenharGrafico(){
   });
   ctx.setLineDash([]);
 
-  // faixas de "Sem operação" (domingo) — começam na linha de meta de excelência e vão até o rodapé
-  DADOS.forEach(function(d, i){
-    const x = padL + slot*i;
-    const semOperacao = d.dia === 'Domingo';
-    if(semOperacao){
-      ctx.fillStyle = 'rgba(255,255,255,0.03)';
-      ctx.fillRect(x, yMetaExcelencia, slot, barZoneBottom - yMetaExcelencia);
-    }
-    if(d.dia === 'Domingo' && !d.atendimento){
-      ctx.fillStyle = 'rgba(139,145,163,0.7)';
-      ctx.font = '600 10px IBM Plex Mono';
-      ctx.textAlign = 'center';
-      const cx = x + slot/2;
-      const cy = barZoneTop + (barZoneBottom - barZoneTop) * 0.35;
-      ctx.fillText('Sem', cx, cy - 6);
-      ctx.fillText('operação', cx, cy + 8);
-    }
-  });
-
   // linha de meta de excelência (97%) tracejada — verde
   ctx.setLineDash([6,4]);
   ctx.strokeStyle = '#2ED3A6';
