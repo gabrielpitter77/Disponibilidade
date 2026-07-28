@@ -252,13 +252,7 @@ function renderKPIs(){
 function desenharGrafico(){
   const canvas = document.getElementById('chart');
   const dpr = window.devicePixelRatio || 1;
-
-  // largura mínima por coluna, pra data e porcentagem não ficarem espremidas;
-  // se precisar de mais espaço que o painel tem, o gráfico rola horizontalmente
-  const MIN_SLOT_PX = 56;
-  const larguraContainer = canvas.parentElement.clientWidth;
-  const larguraNecessaria = Math.max(larguraContainer, (DADOS.length || 1) * MIN_SLOT_PX);
-  canvas.style.width = larguraNecessaria + 'px';
+  canvas.style.width = canvas.parentElement.clientWidth + 'px';
 
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * dpr;
@@ -368,7 +362,7 @@ function desenharGrafico(){
 
   // linha de disponibilidade — curva suave com brilho (glow), estilo da referência
   const pontos = DADOS.map(function(d, i){
-    return { x: padL + slot*i + slot/2, y: d.disponib === null ? null : yPct(d.disponib), v: d.disponib };
+    return { x: padL + slot*i + slot/2, y: d.disponib === null ? null : yPct(d.disponib), v: d.disponib, i: i };
   });
 
   // agrupa em segmentos contínuos (quebra nos dias sem valor)
@@ -414,9 +408,9 @@ function desenharGrafico(){
         ctx.fill();
         ctx.restore();
         ctx.fillStyle = '#E7EAF0';
-        ctx.font = '600 11px IBM Plex Mono';
+        ctx.font = '600 9.5px IBM Plex Mono';
         ctx.textAlign = 'center';
-        ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 12);
+        ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
       }
       return;
     }
@@ -457,22 +451,19 @@ function desenharGrafico(){
       ctx.restore();
 
       ctx.fillStyle = '#E7EAF0';
-      ctx.font = '600 11px IBM Plex Mono';
+      ctx.font = '600 9.5px IBM Plex Mono';
       ctx.textAlign = 'center';
-      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 12);
+      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
     });
   });
 
-  // eixo X: datas e dias da semana
+  // eixo X: só a data (mais compacto, sem o dia da semana embaixo)
   DADOS.forEach(function(d, i){
     const x = padL + slot*i + slot/2;
     ctx.fillStyle = 'rgba(231,234,240,0.85)';
     ctx.font = '600 10px IBM Plex Mono';
     ctx.textAlign = 'center';
-    ctx.fillText(d.data, x, h - padB + 16);
-    ctx.fillStyle = 'rgba(139,145,163,0.7)';
-    ctx.font = '9px IBM Plex Mono';
-    ctx.fillText(d.dia, x, h - padB + 28);
+    ctx.fillText(d.data, x, h - padB + 18);
   });
 }
 window.addEventListener('resize', desenharGrafico);
