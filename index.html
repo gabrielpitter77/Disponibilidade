@@ -341,7 +341,7 @@ function desenharGrafico(){
     const barW = slot * (selecionada ? 0.68 : 0.55);
     const barH = barZoneH * (d.atendimento / maxAtend) * (selecionada ? 1.05 : 1);
     const y = barZoneBottom - barH;
-    barRects.push({ x: x, y: barZoneTop, width: slot, height: barZoneBottom - barZoneTop, index: i });
+    barRects.push({ x: x, y: 0, width: slot, height: h, index: i });
 
     if(selecionada){
       ctx.save();
@@ -408,8 +408,9 @@ function desenharGrafico(){
         ctx.fillStyle = '#FFFFFF';
         ctx.fill();
         ctx.restore();
-        ctx.fillStyle = '#E7EAF0';
-        ctx.font = '600 9.5px IBM Plex Mono';
+        const destacadoM = barSelecionado.has(p.i) || barHover === p.i;
+        ctx.fillStyle = destacadoM ? '#FFFFFF' : '#E7EAF0';
+        ctx.font = (destacadoM ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
         ctx.textAlign = 'center';
         ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
       }
@@ -451,8 +452,9 @@ function desenharGrafico(){
       ctx.fill();
       ctx.restore();
 
-      ctx.fillStyle = '#E7EAF0';
-      ctx.font = '600 9.5px IBM Plex Mono';
+      const destacado = barSelecionado.has(p.i) || barHover === p.i;
+      ctx.fillStyle = destacado ? '#FFFFFF' : '#E7EAF0';
+      ctx.font = (destacado ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
       ctx.textAlign = 'center';
       ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
     });
@@ -461,8 +463,9 @@ function desenharGrafico(){
   // eixo X: só a data (mais compacto, sem o dia da semana embaixo)
   DADOS.forEach(function(d, i){
     const x = padL + slot*i + slot/2;
-    ctx.fillStyle = 'rgba(231,234,240,0.85)';
-    ctx.font = '600 10px IBM Plex Mono';
+    const destacadoData = barSelecionado.has(i) || barHover === i;
+    ctx.fillStyle = destacadoData ? '#FFFFFF' : 'rgba(231,234,240,0.85)';
+    ctx.font = (destacadoData ? '700 11px' : '600 10px') + ' IBM Plex Mono';
     ctx.textAlign = 'center';
     ctx.fillText(d.data, x, h - padB + 18);
   });
