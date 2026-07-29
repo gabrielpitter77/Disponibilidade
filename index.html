@@ -124,6 +124,7 @@ function numeroBR(txt){
 
 let DADOS = [];
 let barSelecionado = new Set();
+let barHover = null;
 let barRects = [];
 let RESUMO = { media: null, melhorDia: null, piorDia: null, diasAcimaMeta: null };
 let erroCarregamento = false;
@@ -336,7 +337,7 @@ function desenharGrafico(){
   DADOS.forEach(function(d, i){
     if(d.atendimento === null || d.atendimento === undefined) return;
     const x = padL + slot*i;
-    const selecionada = barSelecionado.has(i);
+    const selecionada = barSelecionado.has(i) || barHover === i;
     const barW = slot * (selecionada ? 0.68 : 0.55);
     const barH = barZoneH * (d.atendimento / maxAtend) * (selecionada ? 1.05 : 1);
     const y = barZoneBottom - barH;
@@ -480,6 +481,25 @@ chartCanvasEl.addEventListener('click', function(e){
   else barSelecionado.add(hit.index);
   renderKPIs();
   desenharGrafico();
+});
+
+chartCanvasEl.addEventListener('mousemove', function(e){
+  const rect = chartCanvasEl.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width && my >= b.y && my <= b.y + b.height; });
+  const novoHover = hit ? hit.index : null;
+  if(novoHover !== barHover){
+    barHover = novoHover;
+    desenharGrafico();
+  }
+});
+
+chartCanvasEl.addEventListener('mouseleave', function(){
+  if(barHover !== null){
+    barHover = null;
+    desenharGrafico();
+  }
 });
 
 function tickClock(){
