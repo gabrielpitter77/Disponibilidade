@@ -340,9 +340,9 @@ function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, 
       ctx.restore();
 
       ctx.fillStyle = destacado ? '#FFFFFF' : '#E7EAF0';
-      ctx.font = (destacado ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
+      ctx.font = (destacado ? '700 14px' : '700 12px') + ' IBM Plex Mono';
       ctx.textAlign = 'center';
-      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 8);
+      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 10);
     });
   });
 }
@@ -369,7 +369,7 @@ function desenharGrafico(){
   }
 
   const w = rect.width, h = rect.height;
-  const padL = 20, padR = 20, padT = 34, padB = 40;
+  const padL = 20, padR = 20, padT = 34, padB = 52;
   const plotW = w - padL - padR, plotH = h - padT - padB;
   const n = dados.length;
   const slot = plotW / n;
@@ -377,11 +377,11 @@ function desenharGrafico(){
   // zonas verticais: meta (label) > geral > leves > pesados > barras
   const metaY = padT + 8;
   const bandasTop = metaY + 26;
-  const bandasAltura = plotH * 0.5;
+  const bandasAltura = plotH * 0.56;
   const bandaH = bandasAltura / 3;
-  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 10;
-  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 10;
-  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 10;
+  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 20;
+  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 20;
+  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 20;
   const barZoneTop = bandasTop + bandasAltura + 14;
   const barZoneBottom = h - padB;
   const barZoneH = barZoneBottom - barZoneTop;
@@ -453,7 +453,7 @@ function desenharGrafico(){
     ctx.fillText(d.atendimento, x + slot/2, y - 6);
   });
 
-  // eixo X — datas
+  // eixo X — datas + dia da semana
   dados.forEach(function(d, i){
     const x = padL + slot*i + slot/2;
     const destacado = barSelecionado.has(i) || barHover === i;
@@ -461,6 +461,11 @@ function desenharGrafico(){
     ctx.font = (destacado ? '700 10.5px' : '600 10px') + ' IBM Plex Mono';
     ctx.textAlign = 'center';
     ctx.fillText(d.data, x, h - padB + 18);
+    if(d.dia){
+      ctx.fillStyle = destacado ? 'rgba(255,255,255,0.9)' : 'rgba(139,145,163,0.75)';
+      ctx.font = (destacado ? '700 9px' : '9px') + ' IBM Plex Mono';
+      ctx.fillText(d.dia, x, h - padB + 30);
+    }
   });
 }
 window.addEventListener('resize', desenharGrafico);
