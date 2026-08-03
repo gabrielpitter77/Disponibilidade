@@ -257,16 +257,19 @@ function popularFiltros(){
   selDe.addEventListener('change', function(){
     filtroDeIdx = parseInt(selDe.value, 10);
     if(filtroDeIdx > filtroAteIdx){ filtroAteIdx = filtroDeIdx; selAte.value = filtroAteIdx; }
+    renderKPIs();
     desenharGrafico();
   });
   selAte.addEventListener('change', function(){
     filtroAteIdx = parseInt(selAte.value, 10);
     if(filtroAteIdx < filtroDeIdx){ filtroDeIdx = filtroAteIdx; selDe.value = filtroDeIdx; }
+    renderKPIs();
     desenharGrafico();
   });
   document.getElementById('filtroReset').addEventListener('click', function(){
     filtroDeIdx = 0; filtroAteIdx = DADOS.length - 1;
     selDe.value = filtroDeIdx; selAte.value = filtroAteIdx;
+    renderKPIs();
     desenharGrafico();
   });
 }
@@ -281,15 +284,16 @@ function dadosVisiveis(){
 
 /* ---------- KPIs ---------- */
 function renderKPIs(){
-  const comValor = DADOS.filter(d => d.geral !== null);
+  const fatia = DADOS.slice(filtroDeIdx, filtroAteIdx + 1);
+  const comValor = fatia.filter(d => d.geral !== null);
   const media = comValor.length ? comValor.reduce((s,d)=>s+d.geral,0)/comValor.length : 0;
   const metaExcelencia = (DADOS[0] && DADOS[0].meta) || 97;
   const limiteAceitavel = 95;
   const diasAbaixo = comValor.filter(d => d.geral < limiteAceitavel).length;
-  const totalAtendimentos = DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
+  const totalAtendimentos = fatia.reduce((s,d)=>s + (d.atendimento||0), 0);
 
   const kpiData = [
-    { label: 'Disponibilidade Geral média', value: media.toFixed(1) + '%', accent: media >= limiteAceitavel ? 'normal' : 'critico' },
+    { label: 'Disponibilidade Geral média', value: media.toFixed(1) + '%', accent: 'blue' },
     { label: 'Meta de excelência', value: metaExcelencia.toFixed(1) + '%', accent: 'normal' },
     { label: 'Dias no período', value: comValor.length, accent: 'blue' },
     { label: 'Dias abaixo de 95%', value: diasAbaixo + ' de ' + comValor.length, accent: diasAbaixo > 0 ? 'critico' : 'normal' },
