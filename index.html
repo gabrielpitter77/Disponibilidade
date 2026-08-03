@@ -302,9 +302,11 @@ function curvaSuave(ctx, pts){
 function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, corLinha, corGlow, hoverIndex){
   const valores = dados.filter(d => d[campo] !== null && d[campo] !== undefined).map(d => d[campo]);
   if(!valores.length) return;
+  const margemTopo = 26; // espaço reservado pro rótulo do ponto mais alto não colidir com o título da faixa
+  const topoUtil = bandTop + margemTopo;
   const minV = Math.min(...valores) - 0.35;
   const maxV = Math.max(...valores) + 0.35;
-  function y(v){ return bandBottom - (v - minV) / ((maxV - minV) || 1) * (bandBottom - bandTop); }
+  function y(v){ return bandBottom - (v - minV) / ((maxV - minV) || 1) * (bandBottom - topoUtil); }
 
   const pontos = dados.map(function(d, i){
     return { x: padL + slot*i + slot/2, y: (d[campo] === null || d[campo] === undefined) ? null : y(d[campo]), v: d[campo], i: i };
@@ -377,11 +379,11 @@ function desenharGrafico(){
   // zonas verticais: meta (label) > geral > leves > pesados > barras
   const metaY = padT + 8;
   const bandasTop = metaY + 26;
-  const bandasAltura = plotH * 0.56;
+  const bandasAltura = plotH * 0.58;
   const bandaH = bandasAltura / 3;
-  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 20;
-  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 20;
-  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 20;
+  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 28;
+  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 28;
+  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 28;
   const barZoneTop = bandasTop + bandasAltura + 14;
   const barZoneBottom = h - padB;
   const barZoneH = barZoneBottom - barZoneTop;
