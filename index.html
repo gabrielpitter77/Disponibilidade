@@ -11,9 +11,8 @@
     --bg:#0B0E14; --panel:#121620; --panel-2:#161B26; --border:#232838;
     --text:#E7EAF0; --text-muted:#8891A3; --text-dim:#5A6274;
     --blue:#3B82F6; --blue-dim:#1E3A6B;
-    --critico:#FF5C5C; --critico-dim:#3D1B1E;
-    --atencao:#F5A623; --atencao-dim:#3D2E10;
-    --normal:#2ED3A6; --normal-dim:#123A30;
+    --critico:#FF5C5C; --atencao:#F5A623; --normal:#2ED3A6;
+    --roxo:#B983FF;
     --bar:#2E8FA8;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -29,42 +28,54 @@
   .panel::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
   .panel::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
 
-  header{border-bottom:1px solid var(--border); background:rgba(11,14,20,0.92); backdrop-filter:blur(6px); position:sticky; top:0; z-index:50;}
-  .header-top{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1600px; margin:0 auto;}
+  header{border-bottom:1px solid var(--border); background:rgba(11,14,20,0.92); backdrop-filter:blur(6px);}
+  .header-top{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1400px; margin:0 auto;}
   .brand{display:flex; align-items:center; gap:12px;}
   .brand-mark{width:36px; height:36px; border-radius:8px; object-fit:cover; flex-shrink:0;}
   .brand-text h1{font-family:'Space Grotesk'; font-size:16px; font-weight:600;}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:'IBM Plex Mono';}
   #clock{font-family:'IBM Plex Mono'; font-size:12px; color:var(--text-muted);}
 
-  main{max-width:1600px; margin:0 auto; padding:28px;}
+  main{max-width:1400px; margin:0 auto; padding:28px;}
 
-  .kpi-grid{display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; margin-bottom:22px;}
+  .kpi-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; margin-bottom:22px;}
   .kpi{padding:18px 20px;}
   .kpi .eyebrow{margin-bottom:10px;}
-  .kpi .value{font-family:'IBM Plex Mono'; font-size:26px; font-weight:600; line-height:1;}
+  .kpi .value{font-family:'IBM Plex Mono'; font-size:24px; font-weight:600; line-height:1;}
   .kpi.accent-blue .value{color:var(--blue);}
   .kpi.accent-normal .value{color:var(--normal);}
+  .kpi.accent-atencao .value{color:var(--atencao);}
   .kpi.accent-critico .value{color:var(--critico);}
+  .kpi.accent-roxo .value{color:var(--roxo);}
 
-  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;}
-  .section-head h2{font-family:'Space Grotesk'; font-size:16px; font-weight:600;}
-  .legend{display:flex; gap:18px; align-items:center; font-size:11px; color:var(--text-muted); font-family:'IBM Plex Mono';}
+  .filter-bar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 16px; margin-bottom:18px;}
+  .filter-bar label{font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.08em; margin-right:6px;}
+  .filter-bar select{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:4px;
+    color:var(--text); font-family:'IBM Plex Mono'; font-size:12.5px; padding:8px 10px; cursor:pointer;
+  }
+  .filter-bar select:focus{outline:2px solid var(--blue); outline-offset:1px;}
+  .filter-reset{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:4px;
+    color:var(--text-muted); font-family:'IBM Plex Mono'; font-size:12px; padding:8px 14px; cursor:pointer;
+  }
+  .filter-reset:hover{color:var(--text); border-color:var(--text-dim);}
+
+  .chart-panel{padding:22px; margin-bottom:20px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px;}
+  .section-head h2{font-family:'Space Grotesk'; font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;}
+  .legend{display:flex; gap:16px; align-items:center; font-size:11px; color:var(--text-muted); font-family:'IBM Plex Mono'; flex-wrap:wrap;}
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-swatch{width:14px; height:8px; border-radius:2px;}
+  .status-msg{font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);}
 
-  .chart-panel{padding:24px; margin-bottom:22px;}
-  #chart{height:560px; display:block;}
-  .chart-scroll{overflow-x:auto; overflow-y:hidden;}
-
-  .selector-bar{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
-  .month-select{background:var(--panel-2); border:1px solid var(--border); border-radius:4px; padding:9px 14px; color:var(--text); font-family:'IBM Plex Mono'; font-size:13px; cursor:pointer;}
+  .chart-wrap{width:100%; height:620px;}
+  canvas{width:100%; height:100%; display:block; cursor:pointer;}
 
   footer{text-align:center; padding:26px; color:var(--text-dim); font-family:'IBM Plex Mono'; font-size:11px;}
 
-  @media (max-width: 1300px){ .kpi-grid{grid-template-columns:repeat(3,1fr);} }
-  @media (max-width: 1100px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width: 640px){ main{padding:16px;} #chart{height:420px;} }
+  @media (max-width: 1100px){ .kpi-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width: 640px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} main{padding:16px;} .chart-wrap{height:520px;} }
 </style>
 </head>
 <body>
@@ -85,17 +96,27 @@
 <main>
   <section class="kpi-grid" id="kpiGrid" aria-label="Indicadores"></section>
 
+  <div class="panel filter-bar">
+    <label for="filtroDe">De</label>
+    <select id="filtroDe"></select>
+    <label for="filtroAte">Até</label>
+    <select id="filtroAte"></select>
+    <button class="filter-reset" id="filtroReset">Ver período completo</button>
+  </div>
+
   <section class="panel chart-panel">
     <div class="section-head">
-      <h2 id="chartTitle">Disponibilidade</h2>
+      <h2>Disponibilidade</h2>
       <div class="legend">
-        <span class="eyebrow" id="statusMsg" style="margin-right:6px;">CARREGANDO…</span>
+        <span class="status-msg" id="statusMsg">carregando…</span>
+        <div class="legend-item"><span class="legend-swatch" style="border-top:2px dashed var(--normal); height:0; background:none;"></span>Meta de excelência</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. Geral</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--atencao);"></span>Disponib. Leves</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--roxo);"></span>Disponib. Pesados</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Nº Atendimento</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. (%)</div>
-        <div class="legend-item"><span class="legend-swatch" style="border-top:2px dashed var(--normal); height:0;"></span>Meta de excelência (97%)</div>
       </div>
     </div>
-    <div class="chart-scroll"><canvas id="chart"></canvas></div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
   </section>
 </main>
 
@@ -103,30 +124,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-/* ============================================================
-   INTEGRAÇÃO GOOGLE SHEETS
-   Lê a tabela diária (DATA, TOTAL FROTA, PARADOS, ATIVOS,
-   DISPONIB.(%), STATUS, META) direto da planilha via CSV público.
-   ============================================================ */
 const SPREADSHEET_ID = '1Bk1LEYRj--LbEZx7gs8CMOlrR4kUcpVp';
 const GID = '1957024028';
+const ANO_REFERENCIA = 2026;
+const DIAS_SEMANA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
 function csvUrl(gid){
   return 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + gid;
 }
-
-const DIAS_SEMANA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-
 function numeroBR(txt){
-  if(!txt) return NaN;
-  return parseFloat(txt.toString().trim().replace(/\./g,'').replace(',', '.').replace('%',''));
+  if(txt === null || txt === undefined) return null;
+  const t = txt.toString().trim();
+  if(t === '') return null;
+  return parseFloat(t.replace(/\./g,'').replace(',', '.').replace('%',''));
 }
+function normaliza(s){ return (s||'').trim().toUpperCase(); }
 
-let DADOS = [];
-let barSelecionado = new Set();
-let barHover = null;
-let barRects = [];
-let RESUMO = { media: null, melhorDia: null, piorDia: null, diasAcimaMeta: null };
+let DADOS = [];          // todos os dias (sem o "Méd")
+let LINHA_MEDIA = null;  // registro da linha "Méd", se existir
 let erroCarregamento = false;
 let erroMensagem = '';
 
@@ -138,70 +153,57 @@ async function carregarDados(){
     const parsed = Papa.parse(text, { skipEmptyLines: false });
     const rows = parsed.data;
 
-    // busca os KPIs de resumo pelo texto do rótulo, em qualquer célula da planilha
-    function valorPorRotulo(rotulo){
-      for(var r=0; r<rows.length; r++){
-        for(var c=0; c<rows[r].length; c++){
-          if((rows[r][c] || '').trim().toUpperCase().indexOf(rotulo.toUpperCase()) === 0){
-            return (rows[r][c+1] || '').trim();
-          }
-        }
-      }
-      return '';
-    }
-    RESUMO.media = numeroBR(valorPorRotulo('MÉDIA DO PERÍODO'));
-    RESUMO.melhorDia = numeroBR(valorPorRotulo('MELHOR DIA'));
-    RESUMO.piorDia = numeroBR(valorPorRotulo('PIOR DIA'));
-    RESUMO.diasAcimaMeta = parseInt(valorPorRotulo('DIAS ACIMA DA META'), 10);
-
-    // essa planilha tem duas tabelas diárias diferentes; a que queremos é a
-    // segunda (DATA / DISPONIB.(%) / META / Nº Atendimento). Como o texto do
-    // cabeçalho vem quebrado no CSV, localizamos pelo FORMATO dos dados: uma
-    // linha cuja coluna A começa com "dd/m" e as colunas B e C têm "%"
-    var startIdx = -1;
+    var headerIdx = -1;
     for(var h=0; h<rows.length; h++){
-      const c0 = (rows[h][0] || '').trim();
-      const c1 = (rows[h][1] || '').trim();
-      const c2 = (rows[h][2] || '').trim();
-      if(/^\d{1,2}\/\d{1,2}/.test(c0) && c1.indexOf('%') !== -1 && c2.indexOf('%') !== -1){
-        startIdx = h; break;
-      }
+      if(normaliza(rows[h][0]) === 'DATA'){ headerIdx = h; break; }
     }
-    if(startIdx === -1) throw new Error('tabela DATA/DISPONIB./META/Nº Atendimento não encontrada');
+    if(headerIdx === -1) throw new Error('cabeçalho "DATA" não encontrado');
+    const headers = rows[headerIdx];
 
-    const ANO_REFERENCIA = 2026;
+    function encontrarCol(parte){
+      for(var i=0; i<headers.length; i++){
+        if(normaliza(headers[i]).indexOf(parte) !== -1) return i;
+      }
+      return -1;
+    }
+    const colLeves = encontrarCol('LEVES');
+    const colPesados = encontrarCol('PESADOS');
+    const colAtend = encontrarCol('ATENDIMENTO');
+    const colMeta = encontrarCol('META');
+    const colGeral = encontrarCol('GERAL');
+
     const out = [];
-    for(var i = startIdx; i < rows.length; i++){
+    for(var i = headerIdx + 1; i < rows.length; i++){
       const r = rows[i];
       const dataTxt = (r[0] || '').trim();
-      if(!dataTxt) break; // linha em branco = fim da tabela
-
-      const disponibTxt = (r[1] || '').trim();
-      const atendTxt = (r[3] || '').trim();
+      if(!dataTxt) break;
 
       if(/^méd/i.test(dataTxt)){
-        // linha de média, já vem pronta na planilha
-        out.push({
-          data: 'Méd',
-          dia: '',
-          disponib: disponibTxt ? numeroBR(disponibTxt) : null,
-          meta: numeroBR(r[2]) || 97,
-          atendimento: null
-        });
+        LINHA_MEDIA = {
+          geral: colGeral >= 0 ? numeroBR(r[colGeral]) : null,
+          leves: colLeves >= 0 ? numeroBR(r[colLeves]) : null,
+          pesados: colPesados >= 0 ? numeroBR(r[colPesados]) : null,
+          meta: colMeta >= 0 ? (numeroBR(r[colMeta]) || 97) : 97
+        };
         continue;
       }
 
       const m = dataTxt.match(/^(\d{1,2})\/(\d{1,2})/);
       if(!m) continue;
-      const dia = parseInt(m[1], 10), mes = parseInt(m[2], 10);
+      const dia = parseInt(m[1],10), mes = parseInt(m[2],10);
       const dt = new Date(ANO_REFERENCIA, mes - 1, dia);
       const dataFmt = String(dia).padStart(2,'0') + '/' + String(mes).padStart(2,'0');
+
+      const geralTxt = colGeral >= 0 ? (r[colGeral] || '').trim() : '';
+      const atendTxt = colAtend >= 0 ? (r[colAtend] || '').trim() : '';
 
       out.push({
         data: dataFmt,
         dia: DIAS_SEMANA[dt.getDay()],
-        disponib: disponibTxt ? numeroBR(disponibTxt) : null,
-        meta: numeroBR(r[2]) || 97,
+        geral: geralTxt ? numeroBR(geralTxt) : null,
+        leves: colLeves >= 0 ? numeroBR(r[colLeves]) : null,
+        pesados: colPesados >= 0 ? numeroBR(r[colPesados]) : null,
+        meta: (colMeta >= 0 ? numeroBR(r[colMeta]) : null) || 97,
         atendimento: (!atendTxt || atendTxt === '-') ? null : (parseInt(atendTxt, 10) || 0)
       });
     }
@@ -212,34 +214,65 @@ async function carregarDados(){
     erroMensagem = (err && err.message) ? err.message : String(err);
   }
 }
-</script>
-<script>
+
+/* ---------- Filtro de intervalo de datas ---------- */
+let filtroDeIdx = 0;
+let filtroAteIdx = 0;
+
+function popularFiltros(){
+  const selDe = document.getElementById('filtroDe');
+  const selAte = document.getElementById('filtroAte');
+  selDe.innerHTML = '';
+  selAte.innerHTML = '';
+  DADOS.forEach(function(d, i){
+    const optD = document.createElement('option'); optD.value = i; optD.textContent = d.data; selDe.appendChild(optD);
+    const optA = document.createElement('option'); optA.value = i; optA.textContent = d.data; selAte.appendChild(optA);
+  });
+  filtroDeIdx = 0;
+  filtroAteIdx = DADOS.length - 1;
+  selDe.value = filtroDeIdx;
+  selAte.value = filtroAteIdx;
+
+  selDe.addEventListener('change', function(){
+    filtroDeIdx = parseInt(selDe.value, 10);
+    if(filtroDeIdx > filtroAteIdx){ filtroAteIdx = filtroDeIdx; selAte.value = filtroAteIdx; }
+    desenharGrafico();
+  });
+  selAte.addEventListener('change', function(){
+    filtroAteIdx = parseInt(selAte.value, 10);
+    if(filtroAteIdx < filtroDeIdx){ filtroDeIdx = filtroAteIdx; selDe.value = filtroDeIdx; }
+    desenharGrafico();
+  });
+  document.getElementById('filtroReset').addEventListener('click', function(){
+    filtroDeIdx = 0; filtroAteIdx = DADOS.length - 1;
+    selDe.value = filtroDeIdx; selAte.value = filtroAteIdx;
+    desenharGrafico();
+  });
+}
+
+function dadosVisiveis(){
+  const fatia = DADOS.slice(filtroDeIdx, filtroAteIdx + 1);
+  if(LINHA_MEDIA){
+    fatia.push({ data: 'Méd', dia: '', geral: LINHA_MEDIA.geral, leves: LINHA_MEDIA.leves, pesados: LINHA_MEDIA.pesados, meta: LINHA_MEDIA.meta, atendimento: null, ehMedia: true });
+  }
+  return fatia;
+}
 
 /* ---------- KPIs ---------- */
 function renderKPIs(){
-  if(DADOS.length === 0){
-    document.getElementById('kpiGrid').innerHTML = '<div class="panel kpi"><div class="eyebrow">Sem dados</div><div class="value mono">-</div></div>';
-    return;
-  }
-  const comValor = DADOS.filter(d => d.disponib !== null);
-  const mediaComputada = comValor.reduce((s,d)=>s+d.disponib,0) / comValor.length;
-  const media = Number.isFinite(RESUMO.media) ? RESUMO.media : mediaComputada;
-  const metaExcelencia = DADOS[0].meta || 97; // 97% — meta de excelência
-  const limiteAceitavel = 95; // a partir de 95% já é considerado bom
-  const diasAbaixoDoAceitavel = comValor.filter(d => d.disponib < limiteAceitavel).length;
-  const temSelecao = barSelecionado.size > 0;
-  const totalAtendimentos = temSelecao
-    ? DADOS.reduce((s,d,i)=> s + (barSelecionado.has(i) ? (d.atendimento||0) : 0), 0)
-    : DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
-  const labelTotal = temSelecao ? ('Total selecionado (' + barSelecionado.size + ' dia' + (barSelecionado.size>1?'s':'') + ')') : 'Total de atendimentos';
+  const comValor = DADOS.filter(d => d.geral !== null);
+  const media = comValor.length ? comValor.reduce((s,d)=>s+d.geral,0)/comValor.length : 0;
+  const metaExcelencia = (DADOS[0] && DADOS[0].meta) || 97;
+  const limiteAceitavel = 95;
+  const diasAbaixo = comValor.filter(d => d.geral < limiteAceitavel).length;
+  const totalAtendimentos = DADOS.reduce((s,d)=>s + (d.atendimento||0), 0);
 
   const kpiData = [
-    { label: 'Disponibilidade média', value: media.toFixed(1) + '%', accent: media >= limiteAceitavel ? 'normal' : 'critico' },
-    { label: 'Meta', value: limiteAceitavel.toFixed(1) + '%', accent: 'blue' },
+    { label: 'Disponibilidade Geral média', value: media.toFixed(1) + '%', accent: media >= limiteAceitavel ? 'normal' : 'critico' },
     { label: 'Meta de excelência', value: metaExcelencia.toFixed(1) + '%', accent: 'normal' },
     { label: 'Dias no período', value: comValor.length, accent: 'blue' },
-    { label: 'Dias abaixo de 95%', value: diasAbaixoDoAceitavel + ' de ' + comValor.length, accent: diasAbaixoDoAceitavel > 0 ? 'critico' : 'normal' },
-    { label: labelTotal, value: totalAtendimentos, accent: temSelecao ? 'atencao' : 'blue' }
+    { label: 'Dias abaixo de 95%', value: diasAbaixo + ' de ' + comValor.length, accent: diasAbaixo > 0 ? 'critico' : 'normal' },
+    { label: 'Total de atendimentos', value: totalAtendimentos, accent: 'blue' }
   ];
   document.getElementById('kpiGrid').innerHTML = kpiData.map(function(k){
     return '<div class="panel kpi accent-' + k.accent + '">' +
@@ -249,20 +282,84 @@ function renderKPIs(){
   }).join('');
 }
 
-/* ---------- Gráfico combinado: barras + linha + meta tracejada ---------- */
+/* ---------- Gráfico: Meta + 3 linhas empilhadas + barras ---------- */
+let barSelecionado = new Set();
+let barHover = null;
+let barRects = [];
+
+function curvaSuave(ctx, pts){
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  if(pts.length === 2){ ctx.lineTo(pts[1].x, pts[1].y); return; }
+  for(let i=0; i<pts.length-1; i++){
+    const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6, cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6, cp2y = p2.y - (p3.y - p1.y) / 6;
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+  }
+}
+
+function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, corLinha, corGlow, hoverIndex){
+  const valores = dados.filter(d => d[campo] !== null && d[campo] !== undefined).map(d => d[campo]);
+  if(!valores.length) return;
+  const minV = Math.min(...valores) - 0.35;
+  const maxV = Math.max(...valores) + 0.35;
+  function y(v){ return bandBottom - (v - minV) / ((maxV - minV) || 1) * (bandBottom - bandTop); }
+
+  const pontos = dados.map(function(d, i){
+    return { x: padL + slot*i + slot/2, y: (d[campo] === null || d[campo] === undefined) ? null : y(d[campo]), v: d[campo], i: i };
+  });
+  const segmentos = [];
+  let atual = [];
+  pontos.forEach(function(p){
+    if(p.y === null){ if(atual.length) segmentos.push(atual); atual = []; }
+    else atual.push(p);
+  });
+  if(atual.length) segmentos.push(atual);
+
+  segmentos.forEach(function(seg){
+    if(seg.length >= 2){
+      ctx.save();
+      curvaSuave(ctx, seg);
+      ctx.shadowColor = corGlow;
+      ctx.shadowBlur = 9;
+      ctx.strokeStyle = corLinha;
+      ctx.lineWidth = 1.6;
+      ctx.stroke(); ctx.stroke();
+      ctx.restore();
+    }
+    seg.forEach(function(p){
+      const destacado = barSelecionado.has(p.i) || hoverIndex === p.i;
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,255,255,0.7)';
+      ctx.shadowBlur = destacado ? 7 : 3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, destacado ? 3.2 : 1.7, 0, Math.PI*2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = destacado ? '#FFFFFF' : '#E7EAF0';
+      ctx.font = (destacado ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 8);
+    });
+  });
+}
+
 function desenharGrafico(){
   const canvas = document.getElementById('chart');
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = canvas.parentElement.clientWidth + 'px';
-
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * dpr;
   canvas.height = rect.height * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
+  ctx.clearRect(0,0,rect.width, rect.height);
 
-  if(DADOS.length === 0){
-    ctx.clearRect(0, 0, rect.width, rect.height);
+  const dados = dadosVisiveis();
+  if(!dados.length){
     ctx.fillStyle = 'rgba(139,145,163,0.8)';
     ctx.font = '13px IBM Plex Mono';
     ctx.textAlign = 'center';
@@ -272,238 +369,124 @@ function desenharGrafico(){
   }
 
   const w = rect.width, h = rect.height;
-  const padL = 20, padR = 20, padT = 40, padB = 40;
-  const plotW = w - padL - padR;
-  const plotH = h - padT - padB;
-
-  const n = DADOS.length;
+  const padL = 20, padR = 20, padT = 34, padB = 40;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  const n = dados.length;
   const slot = plotW / n;
 
-  // zona das barras: metade inferior do gráfico
-  const barZoneTop = padT + plotH * 0.55;
+  // zonas verticais: meta (label) > geral > leves > pesados > barras
+  const metaY = padT + 8;
+  const bandasTop = metaY + 26;
+  const bandasAltura = plotH * 0.5;
+  const bandaH = bandasAltura / 3;
+  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 10;
+  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 10;
+  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 10;
+  const barZoneTop = bandasTop + bandasAltura + 14;
   const barZoneBottom = h - padB;
   const barZoneH = barZoneBottom - barZoneTop;
-  const maxAtend = Math.max(1, ...DADOS.map(d => d.atendimento || 0)) * 1.15;
+  const maxAtend = Math.max(1, ...dados.map(d => d.atendimento || 0)) * 1.15;
 
-  // zona da linha: compacta, logo acima das barras (menos espaço vazio no topo)
-  const lineZoneBottom = barZoneTop - 30;
-  const lineZoneTop = lineZoneBottom - plotH * 0.22;
-  const valoresPct = DADOS.filter(d => d.disponib !== null).map(d => d.disponib).concat([DADOS[0].meta]);
-  const minPct = Math.min(...valoresPct) - 0.3;
-  const maxPct = Math.max(...valoresPct) + 0.05;
-  function yPct(v){ return lineZoneBottom - (v - minPct) / (maxPct - minPct) * (lineZoneBottom - lineZoneTop); }
-
-  ctx.clearRect(0,0,w,h);
-
-  const yMetaExcelencia = yPct(DADOS[0].meta); // 97% — verde
-
-  // grades horizontais pontilhadas (fundo, estilo da referência)
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  // grade pontilhada de fundo
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
   ctx.lineWidth = 1;
   ctx.setLineDash([2,4]);
-  [0.25, 0.5, 0.75].forEach(function(f){
-    const y = lineZoneTop + (lineZoneBottom - lineZoneTop) * f;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w-padR, y); ctx.stroke();
+  [geralTop, levesTop, pesadosTop, barZoneTop].forEach(function(yy){
+    ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(w-padR, yy); ctx.stroke();
   });
   ctx.setLineDash([]);
 
-  // faixas de "Sem operação" — dias sem Nº Atendimento (domingo, na maioria)
-  DADOS.forEach(function(d, i){
-    if(d.data === 'Méd' || d.disponib === null || d.atendimento !== null) return;
+  // faixa de destaque das colunas em foco/selecionadas
+  dados.forEach(function(d, i){
     const x = padL + slot*i;
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
-    ctx.fillRect(x, yMetaExcelencia, slot, barZoneBottom - yMetaExcelencia);
-    ctx.fillStyle = 'rgba(139,145,163,0.7)';
-    ctx.font = '600 10px IBM Plex Mono';
-    ctx.textAlign = 'center';
-    const cx = x + slot/2;
-    const cy = barZoneTop + (barZoneBottom - barZoneTop) * 0.35;
-    ctx.fillText('Sem', cx, cy - 6);
-    ctx.fillText('operação', cx, cy + 8);
+    const destacado = barSelecionado.has(i) || barHover === i;
+    if(destacado){
+      ctx.fillStyle = barSelecionado.has(i) ? 'rgba(95,168,255,0.07)' : 'rgba(255,255,255,0.04)';
+      ctx.fillRect(x, padT, slot, barZoneBottom - padT);
+    }
   });
 
-  // linha de meta de excelência (97%) tracejada — verde
+  // linha de meta — verde, tracejada, no topo
+  const metaVal = (dados[0] && dados[0].meta) || 97;
   ctx.setLineDash([6,4]);
   ctx.strokeStyle = '#2ED3A6';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(padL, yMetaExcelencia);
-  ctx.lineTo(w - padR, yMetaExcelencia);
+  ctx.moveTo(padL, metaY);
+  ctx.lineTo(w - padR, metaY);
   ctx.stroke();
   ctx.setLineDash([]);
+  ctx.fillStyle = '#2ED3A6';
+  ctx.font = '700 10.5px IBM Plex Mono';
+  ctx.textAlign = 'left';
+  ctx.fillText('META DE EXCELÊNCIA — ' + metaVal.toFixed(1) + '%', padL, metaY - 8);
 
-  // barras (Nº Atendimento) — com interação de clique (foco/destaque)
+  // rótulos das faixas (esquerda)
+  ctx.textAlign = 'left';
+  ctx.font = '700 9.5px IBM Plex Mono';
+  ctx.fillStyle = '#3B82F6'; ctx.fillText('GERAL', padL, geralTop - 4);
+  ctx.fillStyle = '#F5A623'; ctx.fillText('LEVES', padL, levesTop - 4);
+  ctx.fillStyle = '#B983FF'; ctx.fillText('PESADOS', padL, pesadosTop - 4);
+
+  // as 3 linhas
+  desenharLinhaBanda(ctx, dados, 'geral', padL, slot, geralTop, geralBottom, '#5FA8FF', '#3B82F6', barHover);
+  desenharLinhaBanda(ctx, dados, 'leves', padL, slot, levesTop, levesBottom, '#FFC466', '#F5A623', barHover);
+  desenharLinhaBanda(ctx, dados, 'pesados', padL, slot, pesadosTop, pesadosBottom, '#D2AEFF', '#B983FF', barHover);
+
+  // barras de Nº Atendimento
   barRects = [];
-  DADOS.forEach(function(d, i){
-    if(d.atendimento === null || d.atendimento === undefined) return;
+  dados.forEach(function(d, i){
     const x = padL + slot*i;
-    const selecionada = barSelecionado.has(i) || barHover === i;
-    const barW = slot * (selecionada ? 0.68 : 0.55);
-    const barH = barZoneH * (d.atendimento / maxAtend) * (selecionada ? 1.05 : 1);
+    barRects.push({ x: x, y: padT, width: slot, height: barZoneBottom - padT, index: i });
+    if(d.atendimento === null || d.atendimento === undefined) return;
+    const destacado = barSelecionado.has(i) || barHover === i;
+    const barW = slot * (destacado ? 0.66 : 0.55);
+    const barH = barZoneH * (d.atendimento / maxAtend);
     const y = barZoneBottom - barH;
-    barRects.push({ x: x, y: 0, width: slot, height: h, index: i });
-
-    if(selecionada){
-      ctx.save();
-      ctx.shadowColor = 'rgba(46,143,168,0.9)';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = '#3FB0CC';
-      ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#2E8FA8';
-      ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
-    }
-
+    ctx.fillStyle = destacado ? '#3FB0CC' : '#2E8FA8';
+    if(destacado){ ctx.save(); ctx.shadowColor = 'rgba(46,143,168,0.9)'; ctx.shadowBlur = 10; }
+    ctx.fillRect(x + (slot-barW)/2, y, barW, barH);
+    if(destacado) ctx.restore();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = (selecionada ? '700 12px' : '600 11px') + ' IBM Plex Mono';
+    ctx.font = (destacado ? '700 11px' : '600 10px') + ' IBM Plex Mono';
     ctx.textAlign = 'center';
     ctx.fillText(d.atendimento, x + slot/2, y - 6);
   });
 
-  // linha de disponibilidade — curva suave com brilho (glow), estilo da referência
-  const pontos = DADOS.map(function(d, i){
-    return { x: padL + slot*i + slot/2, y: d.disponib === null ? null : yPct(d.disponib), v: d.disponib, i: i };
-  });
-
-  // agrupa em segmentos contínuos (quebra nos dias sem valor)
-  const segmentos = [];
-  let atual = [];
-  pontos.forEach(function(p){
-    if(p.y === null){ if(atual.length) segmentos.push(atual); atual = []; }
-    else atual.push(p);
-  });
-  if(atual.length) segmentos.push(atual);
-
-  function curvaSuave(pts){
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    if(pts.length === 2){
-      ctx.lineTo(pts[1].x, pts[1].y);
-      return;
-    }
-    for(let i=0; i<pts.length-1; i++){
-      const p0 = pts[i-1] || pts[i];
-      const p1 = pts[i];
-      const p2 = pts[i+1];
-      const p3 = pts[i+2] || p2;
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-    }
-  }
-
-  segmentos.forEach(function(seg){
-    if(seg.length < 2){
-      // ponto isolado (ex: coluna "Méd" sem vizinhos) — desenha só o marcador
-      if(seg.length === 1){
-        const p = seg[0];
-        ctx.save();
-        ctx.shadowColor = 'rgba(255,255,255,0.7)';
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.8, 0, Math.PI*2);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fill();
-        ctx.restore();
-        const destacadoM = barSelecionado.has(p.i) || barHover === p.i;
-        ctx.fillStyle = destacadoM ? '#FFFFFF' : '#E7EAF0';
-        ctx.font = (destacadoM ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
-        ctx.textAlign = 'center';
-        ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
-      }
-      return;
-    }
-
-    // área de gradiente sob a curva
-    ctx.save();
-    curvaSuave(seg);
-    ctx.lineTo(seg[seg.length-1].x, barZoneTop);
-    ctx.lineTo(seg[0].x, barZoneTop);
-    ctx.closePath();
-    const grad = ctx.createLinearGradient(0, lineZoneTop, 0, barZoneTop);
-    grad.addColorStop(0, 'rgba(59,130,246,0.35)');
-    grad.addColorStop(1, 'rgba(59,130,246,0)');
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.restore();
-
-    // brilho (glow) da linha
-    ctx.save();
-    curvaSuave(seg);
-    ctx.shadowColor = 'rgba(80,150,255,0.9)';
-    ctx.shadowBlur = 10;
-    ctx.strokeStyle = '#5FA8FF';
-    ctx.lineWidth = 1.4;
-    ctx.stroke();
-    ctx.stroke(); // segunda passada reforça o brilho
-    ctx.restore();
-
-    // pontos brancos com leve brilho + rótulo do valor
-    seg.forEach(function(p){
-      ctx.save();
-      ctx.shadowColor = 'rgba(255,255,255,0.7)';
-      ctx.shadowBlur = 4;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 1.8, 0, Math.PI*2);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fill();
-      ctx.restore();
-
-      const destacado = barSelecionado.has(p.i) || barHover === p.i;
-      ctx.fillStyle = destacado ? '#FFFFFF' : '#E7EAF0';
-      ctx.font = (destacado ? '700 11px' : '600 9.5px') + ' IBM Plex Mono';
-      ctx.textAlign = 'center';
-      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (p.i % 2 === 0 ? 10 : 20));
-    });
-  });
-
-  // eixo X: só a data (mais compacto, sem o dia da semana embaixo)
-  DADOS.forEach(function(d, i){
+  // eixo X — datas
+  dados.forEach(function(d, i){
     const x = padL + slot*i + slot/2;
-    const destacadoData = barSelecionado.has(i) || barHover === i;
-    ctx.fillStyle = destacadoData ? '#FFFFFF' : 'rgba(231,234,240,0.85)';
-    ctx.font = (destacadoData ? '700 11px' : '600 10px') + ' IBM Plex Mono';
+    const destacado = barSelecionado.has(i) || barHover === i;
+    ctx.fillStyle = destacado ? '#FFFFFF' : 'rgba(231,234,240,0.85)';
+    ctx.font = (destacado ? '700 10.5px' : '600 10px') + ' IBM Plex Mono';
     ctx.textAlign = 'center';
     ctx.fillText(d.data, x, h - padB + 18);
   });
 }
 window.addEventListener('resize', desenharGrafico);
 
-const chartCanvasEl = document.getElementById('chart');
-chartCanvasEl.style.cursor = 'pointer';
-chartCanvasEl.addEventListener('click', function(e){
-  const rect = chartCanvasEl.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width && my >= b.y && my <= b.y + b.height; });
-  if(!hit) return;
-  if(barSelecionado.has(hit.index)) barSelecionado.delete(hit.index);
-  else barSelecionado.add(hit.index);
-  renderKPIs();
-  desenharGrafico();
-});
-
-chartCanvasEl.addEventListener('mousemove', function(e){
-  const rect = chartCanvasEl.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width && my >= b.y && my <= b.y + b.height; });
-  const novoHover = hit ? hit.index : null;
-  if(novoHover !== barHover){
-    barHover = novoHover;
-    desenharGrafico();
+function configurarInteracao(){
+  const canvas = document.getElementById('chart');
+  function idxNoMouse(e){
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const hit = barRects.find(function(b){ return mx >= b.x && mx <= b.x + b.width; });
+    return hit ? hit.index : null;
   }
-});
-
-chartCanvasEl.addEventListener('mouseleave', function(){
-  if(barHover !== null){
-    barHover = null;
+  canvas.addEventListener('mousemove', function(e){
+    const idx = idxNoMouse(e);
+    if(idx !== barHover){ barHover = idx; desenharGrafico(); }
+  });
+  canvas.addEventListener('mouseleave', function(){
+    if(barHover !== null){ barHover = null; desenharGrafico(); }
+  });
+  canvas.addEventListener('click', function(e){
+    const idx = idxNoMouse(e);
+    if(idx === null) return;
+    if(barSelecionado.has(idx)) barSelecionado.delete(idx); else barSelecionado.add(idx);
     desenharGrafico();
-  }
-});
+  });
+}
 
 function tickClock(){
   const now = new Date();
@@ -517,15 +500,16 @@ setInterval(tickClock, 1000);
 carregarDados().then(function(){
   const statusEl = document.getElementById('statusMsg');
   if(erroCarregamento){
-    statusEl.textContent = 'FALHA AO CARREGAR: ' + erroMensagem;
+    statusEl.textContent = 'Falha ao carregar: ' + erroMensagem;
     statusEl.style.color = '#FF8A8A';
   } else if(DADOS.length === 0){
-    statusEl.textContent = 'NENHUM DIA COM DADOS ENCONTRADO';
-    statusEl.style.color = '#FFC466';
+    statusEl.textContent = 'Nenhum dia com dado encontrado';
   } else {
     statusEl.textContent = DADOS[0].data + ' – ' + DADOS[DADOS.length-1].data;
+    popularFiltros();
   }
   renderKPIs();
+  configurarInteracao();
   desenharGrafico();
 });
 </script>
