@@ -44,15 +44,14 @@
   .btn-pdf:hover{background:#1A2030; border-color:var(--blue);}
 
   @media print{
-    body{background:#fff; color:#000;}
-    header{position:static; background:#fff; backdrop-filter:none;}
+    *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    body{background:var(--bg);}
+    header{position:static; backdrop-filter:none;}
     .btn-pdf, .filter-bar{display:none !important;}
-    .panel{border:1px solid #ccc; background:#fff; box-shadow:none;}
     .panel::before, .panel::after{display:none;}
-    .kpi .value{color:#000 !important;}
-    main{padding:12px;}
-    .chart-wrap{height:480px;}
-    footer{color:#666;}
+    main{padding:16px;}
+    .chart-wrap{height:560px;}
+    @page{ size: landscape; margin: 10mm; }
   }
 
   main{max-width:1400px; margin:0 auto; padding:28px;}
