@@ -35,6 +35,25 @@
   .brand-text h1{font-family:'Space Grotesk'; font-size:16px; font-weight:600;}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:'IBM Plex Mono';}
   #clock{font-family:'IBM Plex Mono'; font-size:12px; color:var(--text-muted);}
+  .header-actions{display:flex; align-items:center; gap:16px;}
+  .btn-pdf{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-family:'IBM Plex Mono'; font-size:12px; padding:8px 14px;
+    cursor:pointer; transition:background .15s ease, border-color .15s ease;
+  }
+  .btn-pdf:hover{background:#1A2030; border-color:var(--blue);}
+
+  @media print{
+    body{background:#fff; color:#000;}
+    header{position:static; background:#fff; backdrop-filter:none;}
+    .btn-pdf, .filter-bar{display:none !important;}
+    .panel{border:1px solid #ccc; background:#fff; box-shadow:none;}
+    .panel::before, .panel::after{display:none;}
+    .kpi .value{color:#000 !important;}
+    main{padding:12px;}
+    .chart-wrap{height:480px;}
+    footer{color:#666;}
+  }
 
   main{max-width:1400px; margin:0 auto; padding:28px;}
 
@@ -89,7 +108,10 @@
         <span>LOC FROTA · PAINEL EXECUTIVO</span>
       </div>
     </div>
-    <div id="clock" class="mono">--:--:--</div>
+    <div class="header-actions">
+      <div id="clock" class="mono">--:--:--</div>
+      <button id="btnPdf" class="btn-pdf" title="Salvar este painel como PDF">📄 Exportar PDF</button>
+    </div>
   </div>
 </header>
 
@@ -503,6 +525,10 @@ function tickClock(){
 }
 tickClock();
 setInterval(tickClock, 1000);
+
+document.getElementById('btnPdf').addEventListener('click', function(){
+  window.print();
+});
 
 carregarDados().then(function(){
   const statusEl = document.getElementById('statusMsg');
