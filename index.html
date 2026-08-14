@@ -84,6 +84,9 @@
   .section-head h2{font-family:'Space Grotesk'; font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;}
   .legend{display:flex; gap:16px; align-items:center; font-size:11px; color:var(--text-muted); font-family:'IBM Plex Mono'; flex-wrap:wrap;}
   .legend-item{display:flex; align-items:center; gap:6px;}
+  .legend-clicavel{padding:4px 8px; border-radius:4px; transition:background .15s ease;}
+  .legend-clicavel:hover{background:rgba(255,255,255,0.05);}
+  .legend-clicavel.active{background:rgba(255,255,255,0.08); box-shadow:0 0 0 1px rgba(255,255,255,0.15) inset;}
   .legend-swatch{width:14px; height:8px; border-radius:2px;}
   .status-msg{font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);}
 
@@ -131,9 +134,9 @@
       <div class="legend">
         <span class="status-msg" id="statusMsg">carregando…</span>
         <div class="legend-item"><span class="legend-swatch" style="border-top:2px dashed var(--normal); height:0; background:none;"></span>Meta de excelência</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. Geral</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--atencao);"></span>Disponib. Leves</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--roxo);"></span>Disponib. Pesados</div>
+        <div class="legend-item legend-clicavel" data-linha="geral" style="cursor:pointer;"><span class="legend-swatch" style="background:var(--blue);"></span>Disponib. Geral</div>
+        <div class="legend-item legend-clicavel" data-linha="leves" style="cursor:pointer;"><span class="legend-swatch" style="background:var(--atencao);"></span>Disponib. Leves</div>
+        <div class="legend-item legend-clicavel" data-linha="pesados" style="cursor:pointer;"><span class="legend-swatch" style="background:var(--roxo);"></span>Disponib. Pesados</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--bar);"></span>Nº Atendimento</div>
       </div>
     </div>
@@ -311,6 +314,7 @@ function renderKPIs(){
 let barSelecionado = new Set();
 let barHover = null;
 let barRects = [];
+let linhaDestacada = null; // 'geral' | 'leves' | 'pesados' | null
 
 function curvaSuave(ctx, pts){
   ctx.beginPath();
@@ -324,7 +328,7 @@ function curvaSuave(ctx, pts){
   }
 }
 
-function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, corLinha, corGlow, hoverIndex){
+function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, corLinha, corGlow, hoverIndex, emEvidencia, apagada){
   const valores = dados.filter(d => d[campo] !== null && d[campo] !== undefined).map(d => d[campo]);
   if(!valores.length) return;
   const margemTopo = 26; // espaço reservado pro rótulo do ponto mais alto não colidir com o título da faixa
@@ -344,34 +348,42 @@ function desenharLinhaBanda(ctx, dados, campo, padL, slot, bandTop, bandBottom, 
   });
   if(atual.length) segmentos.push(atual);
 
+  ctx.save();
+  ctx.globalAlpha = apagada ? 0.28 : 1;
+
   segmentos.forEach(function(seg){
     if(seg.length >= 2){
       ctx.save();
       curvaSuave(ctx, seg);
       ctx.shadowColor = corGlow;
-      ctx.shadowBlur = 9;
+      ctx.shadowBlur = emEvidencia ? 16 : 9;
       ctx.strokeStyle = corLinha;
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth = emEvidencia ? 2.8 : 1.6;
       ctx.stroke(); ctx.stroke();
+      if(emEvidencia) ctx.stroke();
       ctx.restore();
     }
     seg.forEach(function(p){
       const destacado = barSelecionado.has(p.i) || hoverIndex === p.i;
+      const raio = (emEvidencia ? 4.6 : 1.7) + (destacado ? 1.5 : 0);
       ctx.save();
       ctx.shadowColor = 'rgba(255,255,255,0.7)';
-      ctx.shadowBlur = destacado ? 7 : 3;
+      ctx.shadowBlur = destacado ? 7 : (emEvidencia ? 6 : 3);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, destacado ? 3.2 : 1.7, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, raio, 0, Math.PI*2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
 
       ctx.fillStyle = destacado ? '#FFFFFF' : '#E7EAF0';
-      ctx.font = (destacado ? '700 14px' : '700 12px') + ' IBM Plex Mono';
+      const tamanhoFonte = emEvidencia ? (destacado ? 17 : 15) : (destacado ? 14 : 12);
+      ctx.font = '700 ' + tamanhoFonte + 'px IBM Plex Mono';
       ctx.textAlign = 'center';
-      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - 10);
+      ctx.fillText(p.v.toFixed(1) + '%', p.x, p.y - (emEvidencia ? 13 : 10));
     });
   });
+
+  ctx.restore();
 }
 
 function desenharGrafico(){
@@ -405,10 +417,16 @@ function desenharGrafico(){
   const metaY = padT + 8;
   const bandasTop = metaY + 26;
   const bandasAltura = plotH * 0.58;
-  const bandaH = bandasAltura / 3;
-  const geralTop = bandasTop, geralBottom = bandasTop + bandaH - 28;
-  const levesTop = bandasTop + bandaH, levesBottom = bandasTop + bandaH*2 - 28;
-  const pesadosTop = bandasTop + bandaH*2, pesadosBottom = bandasTop + bandaH*3 - 28;
+  var fracGeral = 1/3, fracLeves = 1/3, fracPesados = 1/3;
+  if(linhaDestacada === 'geral'){ fracGeral = 0.6; fracLeves = 0.2; fracPesados = 0.2; }
+  else if(linhaDestacada === 'leves'){ fracGeral = 0.2; fracLeves = 0.6; fracPesados = 0.2; }
+  else if(linhaDestacada === 'pesados'){ fracGeral = 0.2; fracLeves = 0.2; fracPesados = 0.6; }
+  const alturaGeral = bandasAltura * fracGeral;
+  const alturaLeves = bandasAltura * fracLeves;
+  const alturaPesados = bandasAltura * fracPesados;
+  const geralTop = bandasTop, geralBottom = bandasTop + alturaGeral - 28;
+  const levesTop = bandasTop + alturaGeral, levesBottom = bandasTop + alturaGeral + alturaLeves - 28;
+  const pesadosTop = bandasTop + alturaGeral + alturaLeves, pesadosBottom = bandasTop + alturaGeral + alturaLeves + alturaPesados - 28;
   const barZoneTop = bandasTop + bandasAltura + 14;
   const barZoneBottom = h - padB;
   const barZoneH = barZoneBottom - barZoneTop;
@@ -450,15 +468,23 @@ function desenharGrafico(){
 
   // rótulos das faixas (esquerda)
   ctx.textAlign = 'left';
-  ctx.font = '700 9.5px IBM Plex Mono';
-  ctx.fillStyle = '#3B82F6'; ctx.fillText('GERAL', padL, geralTop - 4);
-  ctx.fillStyle = '#F5A623'; ctx.fillText('LEVES', padL, levesTop - 4);
-  ctx.fillStyle = '#B983FF'; ctx.fillText('PESADOS', padL, pesadosTop - 4);
+  function rotuloFaixa(texto, cor, yy, chave){
+    const emEvidencia = linhaDestacada === chave;
+    const apagada = linhaDestacada !== null && !emEvidencia;
+    ctx.globalAlpha = apagada ? 0.35 : 1;
+    ctx.font = (emEvidencia ? '700 12px' : '700 9.5px') + ' IBM Plex Mono';
+    ctx.fillStyle = cor;
+    ctx.fillText(texto, padL, yy - 4);
+    ctx.globalAlpha = 1;
+  }
+  rotuloFaixa('GERAL', '#3B82F6', geralTop, 'geral');
+  rotuloFaixa('LEVES', '#F5A623', levesTop, 'leves');
+  rotuloFaixa('PESADOS', '#B983FF', pesadosTop, 'pesados');
 
   // as 3 linhas
-  desenharLinhaBanda(ctx, dados, 'geral', padL, slot, geralTop, geralBottom, '#5FA8FF', '#3B82F6', barHover);
-  desenharLinhaBanda(ctx, dados, 'leves', padL, slot, levesTop, levesBottom, '#FFC466', '#F5A623', barHover);
-  desenharLinhaBanda(ctx, dados, 'pesados', padL, slot, pesadosTop, pesadosBottom, '#D2AEFF', '#B983FF', barHover);
+  desenharLinhaBanda(ctx, dados, 'geral', padL, slot, geralTop, geralBottom, '#5FA8FF', '#3B82F6', barHover, linhaDestacada === 'geral', linhaDestacada !== null && linhaDestacada !== 'geral');
+  desenharLinhaBanda(ctx, dados, 'leves', padL, slot, levesTop, levesBottom, '#FFC466', '#F5A623', barHover, linhaDestacada === 'leves', linhaDestacada !== null && linhaDestacada !== 'leves');
+  desenharLinhaBanda(ctx, dados, 'pesados', padL, slot, pesadosTop, pesadosBottom, '#D2AEFF', '#B983FF', barHover, linhaDestacada === 'pesados', linhaDestacada !== null && linhaDestacada !== 'pesados');
 
   // barras de Nº Atendimento
   barRects = [];
@@ -499,6 +525,18 @@ window.addEventListener('resize', desenharGrafico);
 
 function configurarInteracao(){
   const canvas = document.getElementById('chart');
+
+  document.querySelectorAll('.legend-clicavel').forEach(function(item){
+    item.addEventListener('click', function(){
+      const linha = item.dataset.linha;
+      linhaDestacada = (linhaDestacada === linha) ? null : linha;
+      document.querySelectorAll('.legend-clicavel').forEach(function(i){
+        i.classList.toggle('active', i.dataset.linha === linhaDestacada);
+      });
+      desenharGrafico();
+    });
+  });
+
   function idxNoMouse(e){
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
