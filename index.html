@@ -252,8 +252,29 @@ function popularFiltros(){
     const optD = document.createElement('option'); optD.value = i; optD.textContent = d.data; selDe.appendChild(optD);
     const optA = document.createElement('option'); optA.value = i; optA.textContent = d.data; selAte.appendChild(optA);
   });
-  filtroDeIdx = 0;
-  filtroAteIdx = DADOS.length - 1;
+
+  // padrão ao abrir: do dia 1º do mês atual até hoje (ou até o último dia
+  // com dado, se hoje ainda não tiver sido preenchido na planilha) — mas
+  // continua 100% ajustável pelos seletores abaixo
+  const hoje = new Date();
+  const dataInicioMes = '01/' + String(hoje.getMonth()+1).padStart(2,'0');
+  const dataHoje = String(hoje.getDate()).padStart(2,'0') + '/' + String(hoje.getMonth()+1).padStart(2,'0');
+
+  let idxInicio = DADOS.findIndex(function(d){ return d.data === dataInicioMes; });
+  if(idxInicio === -1) idxInicio = 0;
+
+  let idxFim = DADOS.findIndex(function(d){ return d.data === dataHoje; });
+  if(idxFim === -1){
+    // hoje ainda não tem dado na planilha — usa o último dia já preenchido
+    for(var i = DADOS.length - 1; i >= 0; i--){
+      if(DADOS[i].geral !== null){ idxFim = i; break; }
+    }
+    if(idxFim === -1) idxFim = DADOS.length - 1;
+  }
+  if(idxFim < idxInicio) idxFim = idxInicio;
+
+  filtroDeIdx = idxInicio;
+  filtroAteIdx = idxFim;
   selDe.value = filtroDeIdx;
   selAte.value = filtroAteIdx;
 
